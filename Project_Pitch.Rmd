@@ -1,0 +1,100 @@
+---
+title: "Project Pitch"
+author: "Ovunc Ozgun Eker"
+date: "2025-11-17"
+output: ioslides_presentation
+---
+
+## Content
+
+This app provides an introductory exercise to discrete supervised learning methods. It uses the `iris` data, which comes pre-uploaded with R. Normally `iris` data comes with 4 features. However, we will use only two of those features for visualization reasons. See the next slide for the correct classification. 
+
+## Graph of Iris Dataset
+
+Here we are slicing the our data set the same way we did in our app.
+
+```{r, echo=FALSE,message=FALSE}
+library(caret)
+library(ggplot2)
+set.seed(31)
+  new_iris <- iris[,-c(2,3)]
+  inTrain <- createDataPartition(new_iris$Species, p=0.75, list=FALSE)
+  training <- new_iris[inTrain,]
+  testing <- new_iris[-inTrain,]
+  
+ggplot(testing,aes(x=Petal.Width,y=Sepal.Length,color=Species)) + geom_point()
+```
+
+## Example from Our App
+
+What our app does is that it asks you which classifier you want to use on this data set. After you choose your classifier, if applicable, it asks you pick some parameters from the ones given to you. And then it shows you the results of your classifier. Specifically, it gives you the plot of your results with your accuracy and number of missclassified items.
+
+## Graph Example from our App
+
+This is the example for the classifier *SVM Linear* with cost parameter *0.1*.
+
+```{r,echo=FALSE,message=FALSE}
+library(plotly)
+library(caret)
+actual_colors <- c('setosa' = '#FF6B6B', 'versicolor' = '#3CB44B', 'virginica' = '#4363D8')
+    pred_shapes <- c('setosa' = 'circle', 'versicolor' = 'square', 'virginica' = 'diamond')
+    
+    
+    plot_data <- data.frame(
+      Petal.Width = testing$Petal.Width,
+      Sepal.Length = testing$Sepal.Length,
+      Species = testing$Species,
+      Predicted = predict(train(Species~.,training,method="svmLinear",
+                                tuneGrid = expand.grid(C = 0.1)),testing)
+    )
+    
+    p <- plot_ly(plot_data, x = ~Petal.Width, y = ~Sepal.Length) %>%
+      add_markers(
+        color = ~Species,
+        colors = actual_colors,
+        symbol = ~Predicted,
+        symbols = pred_shapes,
+        opacity = 0.8,
+        marker = list(size = 10),
+        hoverinfo = 'text',
+        text = ~paste('Actual:', Species, '<br>Predicted:', Predicted),
+        showlegend = FALSE
+      ) %>%
+      layout(
+        title = 'Classification Results ( SVM Linear )',
+        xaxis = list(title = 'Petal Width'),
+        yaxis = list(title = 'Sepal Length'),
+        annotations = list(
+          # Actual classes legend (colors)
+          list(x = 0.02, y = 0.98, xref = "paper", yref = "paper",
+               text = "<b>Actual Species (Color):</b>", showarrow = FALSE,
+               xanchor = "left", font = list(size = 12)),
+          list(x = 0.02, y = 0.94, xref = "paper", yref = "paper",
+               text = "● setosa", showarrow = FALSE, 
+               xanchor = "left", font = list(color = '#FF6B6B', size = 11)),
+          list(x = 0.02, y = 0.90, xref = "paper", yref = "paper",
+               text = "● versicolor", showarrow = FALSE,
+               xanchor = "left", font = list(color = '#3CB44B', size = 11)),
+          list(x = 0.02, y = 0.86, xref = "paper", yref = "paper",
+               text = "● virginica", showarrow = FALSE,
+               xanchor = "left", font = list(color = '#4363D8', size = 11)),
+          
+          # Predicted classes legend (shapes)
+          list(x = 0.02, y = 0.78, xref = "paper", yref = "paper",
+               text = "<b>Predicted Species (Shape):</b>", showarrow = FALSE,
+               xanchor = "left", font = list(size = 12)),
+          list(x = 0.02, y = 0.74, xref = "paper", yref = "paper",
+               text = "○ setosa", showarrow = FALSE,
+               xanchor = "left", font = list(size = 11)),
+          list(x = 0.02, y = 0.71, xref = "paper", yref = "paper",
+               text = "□ versicolor", showarrow = FALSE,
+               xanchor = "left", font = list(size = 11)),
+          list(x = 0.02, y = 0.64, xref = "paper", yref = "paper",
+               text = "◇ virginica", showarrow = FALSE,
+               xanchor = "left", font = list(size = 11))
+        )
+      )
+    
+    p
+```
+
